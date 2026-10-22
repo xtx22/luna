@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { isKokoTerminalAiAvailable } from "#koko/composables/terminal/useTerminalAiSessions";
 import AiOverlayPanel from "~/components/RightPanel/AiOverlayPanel.vue";
 import { isAdminSessionQuery } from "~/composables/useSessionWindowConnect";
 import { desktopInvoke } from "~/shared/desktop/bridge";
@@ -9,7 +10,7 @@ definePageMeta({ layout: "connect" });
 const route = useRoute();
 const { t } = useI18n();
 const { initialTheme, listenOSThemeChange } = useThemeAdapter();
-const { closeSession, registerSessionDisposer, activeTab, tabs } = useWorkspaceTabs();
+const { closeSession, registerSessionDisposer, activeTab, activePaneId, tabs } = useWorkspaceTabs();
 const { registerKokoTicketProvider } = useWorkspaceConnectors();
 const { ensureConnected, error, assetName } = useSessionWindowConnect();
 const { authReady } = useAuthSession();
@@ -17,6 +18,13 @@ const { open: rightPanelOpen, panelWidth } = useRightPanel();
 const { open: aiPanelOpen, setOpen: setAiPanelOpen } = useAiPanel();
 const userInfoStore = useUserInfoStore();
 const { loggedIn } = storeToRefs(userInfoStore);
+
+const activePane = computed(() => activeTab.value?.panes.find((pane) => pane.id === activePaneId.value) || null);
+const supportsTerminalAiCommand = computed(() => {
+  const pane = activePane.value;
+  if (!pane || pane.connectionProgress) return false;
+  return isKokoTerminalAiAvailable(pane.id);
+});
 
 const bootstrapped = ref(false);
 const isAdminConnect = computed(() => isAdminSessionQuery(route.query));
@@ -153,6 +161,7 @@ const openLogin = () => {
       <template v-if="activeTab">
         <WorkspaceSessionPane :tab="activeTab" class="min-h-0 flex-1" />
         <WorkspacePaneSurfaceHost v-for="pane in activeTab.panes" :key="pane.id" :pane="pane" />
+        <WorkspaceTerminalAiCommandPopover v-if="supportsTerminalAiCommand && activePane" :pane="activePane" />
 
         <aside
           class="absolute inset-y-0 right-0 z-30 overflow-hidden border-l border-default transition-transform duration-150 ease-out will-change-transform"

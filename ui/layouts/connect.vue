@@ -17,7 +17,7 @@ const macTrafficLightInset = computed(() => isDesktopRuntime() && isMacOS.value 
     <HeaderDesktopTitleBar v-if="isSessionWindow && !isMacOS" :show-menus="false">
       <WorkspaceTabHeader v-if="showSessionTabChrome" standalone />
       <template v-if="showSessionTabChrome" #trailing>
-        <HeaderActionButtons :show-profile="false" />
+        <HeaderActionButtons :show-profile="true" />
       </template>
     </HeaderDesktopTitleBar>
     <HeaderDesktopTitleBar v-else :show-menus="false" />
@@ -28,7 +28,7 @@ const macTrafficLightInset = computed(() => isDesktopRuntime() && isMacOS.value 
     >
       <span class="truncate">JumpServer</span>
     </header>
-    <WorkspaceTopHeader v-if="showSessionTabChrome && (!isDesktopRuntime() || isMacOS)" :show-profile="false">
+    <WorkspaceTopHeader v-if="showSessionTabChrome && (!isDesktopRuntime() || isMacOS)" :show-profile="true">
       <div class="h-full" :class="macTrafficLightInset ? 'pl-20' : ''">
         <WorkspaceTabHeader standalone />
       </div>
