@@ -1,5 +1,12 @@
 <script lang="ts" setup>
 import KokoSftpTransferCenter from "#koko/components/FileManagement/SftpTransferCenter.vue";
+import {
+  SettingsAboutPage,
+  SettingsAppearancePage,
+  SettingsApplicationPage,
+  SettingsGeneralPage,
+  SettingsUserPage
+} from "~/composables/loadSettingsSection";
 import { shouldShowSessionTabStrip } from "~/composables/useSessionWindowConnect";
 
 const route = useRoute();
@@ -10,6 +17,15 @@ const isSessionWindow = computed(() => route.path.startsWith("/session/"));
 const showSessionTabs = computed(() => shouldShowSessionTabStrip(route.path, route.query));
 const showSessionTabChrome = computed(() => showSessionTabs.value && !focusMode.value);
 const macTrafficLightInset = computed(() => isDesktopRuntime() && isMacOS.value && !nativeFullscreen.value);
+const { open: settingsOpen, activeSection: activeSettingsSection } = useSettingsWindow();
+const settingsSectionPages = {
+  user: SettingsUserPage,
+  general: SettingsGeneralPage,
+  appearance: SettingsAppearancePage,
+  application: SettingsApplicationPage,
+  about: SettingsAboutPage
+} as const;
+const activeSettingsPage = computed(() => settingsSectionPages[activeSettingsSection.value] || SettingsAboutPage);
 </script>
 
 <template>
@@ -37,5 +53,28 @@ const macTrafficLightInset = computed(() => isDesktopRuntime() && isMacOS.value 
       <slot />
     </div>
     <KokoSftpTransferCenter />
+
+    <Transition name="settings-overlay">
+      <div
+        v-if="settingsOpen"
+        role="dialog"
+        aria-modal="true"
+        :aria-label="$t('Common.Settings')"
+        data-state="open"
+        class="fixed inset-0 z-200"
+      >
+        <SettingsShell mode="inline" :active-section="activeSettingsSection" class="h-full">
+          <Transition name="settings-section" mode="out-in">
+            <KeepAlive>
+              <component
+                :is="activeSettingsPage"
+                :key="activeSettingsSection"
+                v-bind="activeSettingsSection === 'application' ? { embedded: true } : {}"
+              />
+            </KeepAlive>
+          </Transition>
+        </SettingsShell>
+      </div>
+    </Transition>
   </div>
 </template>
