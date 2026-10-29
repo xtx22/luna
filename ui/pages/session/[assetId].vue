@@ -10,7 +10,7 @@ definePageMeta({ layout: "connect" });
 const route = useRoute();
 const { t } = useI18n();
 const { initialTheme, listenOSThemeChange } = useThemeAdapter();
-const { closeSession, registerSessionDisposer, activeTab, activePaneId, tabs } = useWorkspaceTabs();
+const { closeSession, registerSessionDisposer, activeTab, activeTabId, activePaneId, tabs } = useWorkspaceTabs();
 const { registerKokoTicketProvider } = useWorkspaceConnectors();
 const { ensureConnected, error, assetName } = useSessionWindowConnect();
 const { authReady } = useAuthSession();
@@ -19,6 +19,7 @@ const { open: aiPanelOpen, setOpen: setAiPanelOpen } = useAiPanel();
 const userInfoStore = useUserInfoStore();
 const { loggedIn } = storeToRefs(userInfoStore);
 
+const panes = computed(() => tabs.value.flatMap((tab) => tab.panes));
 const activePane = computed(() => activeTab.value?.panes.find((pane) => pane.id === activePaneId.value) || null);
 const supportsTerminalAiCommand = computed(() => {
   const pane = activePane.value;
@@ -159,8 +160,10 @@ const openLogin = () => {
         </div>
       </header>
       <template v-if="activeTab">
-        <WorkspaceSessionPane :tab="activeTab" class="min-h-0 flex-1" />
-        <WorkspacePaneSurfaceHost v-for="pane in activeTab.panes" :key="pane.id" :pane="pane" />
+        <template v-for="tab in tabs" :key="tab.id">
+          <WorkspaceSessionPane v-show="activeTabId === tab.id" :tab="tab" class="min-h-0 flex-1" />
+        </template>
+        <WorkspacePaneSurfaceHost v-for="pane in panes" :key="pane.id" :pane="pane" />
         <WorkspaceTerminalAiCommandPopover v-if="supportsTerminalAiCommand && activePane" :pane="activePane" />
 
         <aside
