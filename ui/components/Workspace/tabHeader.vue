@@ -344,6 +344,17 @@ const contextMenuItems = computed<DropdownMenuItem[]>(() => {
     return [
       tabMenuItem(
         {
+          label: t("TabMenu.CloneConnect"),
+          disabled: !hasToken,
+          onSelect: () => {
+            hideContextMenu();
+            void cloneSession(tab);
+          }
+        },
+        "i-lucide-copy"
+      ),
+      tabMenuItem(
+        {
           label: t("TabMenu.Reconnect"),
           disabled: !hasToken,
           onSelect: () => {
